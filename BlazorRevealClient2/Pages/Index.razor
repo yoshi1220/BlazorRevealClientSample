@@ -1,0 +1,52 @@
+﻿@page "/"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, Reveal Dashboard!</h1>
+<AuthorizeView>
+    <Authorized>
+        <div id="revealView" style="width:100%; height:750px"></div>
+    </Authorized>
+</AuthorizeView>
+@code {
+    private string _userType = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity!.IsAuthenticated)
+            {
+                //本来はここにUserの情報を取得する処理を記載して、DB等からダッシュボードを選択する情報を読み込む
+                _userType = user.Identity.Name!;
+
+            }
+            else
+            {
+                _userType = string.Empty;
+            }
+
+
+            if (_userType == "jpsc@infragistics.com")
+            {
+                await JSRuntime.InvokeVoidAsync("loadRevealView", "revealView", "HealthCare");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("loadRevealView", "revealView", "Marketing");
+            }
+
+        }
+    }
+
+}
